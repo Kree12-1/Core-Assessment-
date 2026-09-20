@@ -1,0 +1,22 @@
+{
+  "homeworkTypes": [
+    {
+      "name": "Discussions",
+      "displayName": "Group Discussions",
+      "numberOfTasksPerSemester": 8,
+      "maximumPointsPerSubmission": 50
+    },
+    {
+      "name": "Core Assessment",
+      "displayName": "Core Assessments",
+      "numberOfTasksPerSemester": 4,
+      "maximumPointsPerSubmission": 50
+    },
+    {
+      "name": "Course Project",
+      "displayName": "Course Project",
+      "numberOfTasksPerSemester": 8,
+      "maximumPointsPerSubmission": 50
+    }
+  ]
+}

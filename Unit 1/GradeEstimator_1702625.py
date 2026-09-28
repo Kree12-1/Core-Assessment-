@@ -1,68 +1,52 @@
-# Import the json library because we need to read data from the tasks.json file.
-import json
+# Import the requests library so that we can make a web request to the World Time API.
+import requests
 
+# Import datetime so we can convert the Unix timestamp into a Python date/time object.
+from datetime import datetime
 
-# Create the Task_type class because we need to store information about each task category.
-class Task_type:
+# Store the World Time API URL for the America/Chicago timezone.
+url = "https://time.now/developer/api/timezone/America/Chicago"
 
-    # Create the constructor because each Task_type object needs initial values.
-    def __init__(self, name, display_name, tasks_per_semester, maximum_points_per_task):
+# This line sends a GET request to the TimeAPI website so the program can retrieve the current date and time..
+response = requests.get(url)
 
-        # Store the task name because we need to identify the task category.
-        self.name = name
+# This line converts the API response into a Python dictionary so the program can access the returned information.
+data = response.json()
 
-        # Store the display name because we need a readable task description.
-        self.display_name = display_name
+# Get the client's IP address from the JSON response.
+client_ip = data["client_ip"]
 
-        # Store the number of tasks because we need it to calculate total points.
-        self.tasks_per_semester = tasks_per_semester
+# Get the current day of the year from the JSON response.
+day_of_year = data["day_of_year"]
 
-        # Store the maximum points because we need it to calculate total points.
-        self.maximum_points_per_task = maximum_points_per_task
+# Get the current UTC date and time from the JSON response.
+utc_datetime = data["utc_datetime"]
 
+# Display the client's IP address.
+print("Client IP:", client_ip)
 
-# Open the tasks.json file because the program needs to read task information.
-with open("tasks.json", "r") as file:
+# Display the current day of the year returned by the API.
+print("Day of year:", day_of_year)
 
-    # Convert the JSON data into a Python dictionary so it can be used.
-    task_data = json.load(file)
+# Display the current UTC date and time returned by the API.
+print("UTC datetime:", utc_datetime)
 
+# Store the date when the course began and convert it to the day of the year.
+# Change this date to the actual first day of your course if necessary.
+begin_course_day = datetime(2026, 8, 17).timetuple().tm_yday
 
-# Create an empty list because we need to store all Task_type objects.
-task_types = []
+# Get the Unix timestamp from the JSON response and convert it to a datetime object.
+now_date = datetime.fromtimestamp(data["unixtime"])
 
+# Convert the current datetime into the day of the year.
+now_day = now_date.timetuple().tm_yday
 
-# Loop through each task in the JSON file because each task needs a class object.
-for task in task_data["tasks"]:
+# Calculate how many days have passed since the course began.
+days_completed = now_day - begin_course_day
 
-    # Create a new Task_type object using values loaded from the JSON file.
-    new_task = Task_type(
-        task["name"],
-        task["displayName"],
-        task["numberOfTasksPerSemester"],
-        task["maximumPointsPerSubmission"]
-    )
+# Divide the number of completed days by 7 because there are 7 days in one Unit.
+# int() removes any decimal portion from the result.
+units_completed = int(days_completed / 7)
 
-    # Add the Task_type object to the list because we need all task types together.
-    task_types.append(new_task)
-
-
-# Create a variable starting at zero because we will add points from each task type.
-total_maximum_points = 0
-
-
-# Loop through each task object because we need to calculate all possible points.
-for task in task_types:
-
-    # Multiply tasks by points per task because this gives the total for this category.
-    task_total_points = (
-        task.tasks_per_semester *
-        task.maximum_points_per_task
-    )
-
-    # Add the category total because we need the maximum grade for the whole class.
-    total_maximum_points += task_total_points
-
-
-# Display the maximum grade because the user needs to see the final calculation.
-print("Maximum grade you can get for this class is:", total_maximum_points)
+# Display the current Unit of the class out of 8 total Units.
+print(f"You have completed {units_completed} Units of 8.")

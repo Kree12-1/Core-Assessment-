@@ -1,52 +1,84 @@
-# Import the requests library so that we can make a web request to the World Time API.
-import requests
+import csv
 
-# Import datetime so we can convert the Unix timestamp into a Python date/time object.
-from datetime import datetime
+data = [
+    ["type", "Week1", "Week2", "Week3", "Week4", "Week5", "Week6", "Week7", "Week8"],
+    ["discussion", 50, 50, 50, -10, 50, 0, 50, 50],
+    ["course_project", 100, 50, 45, 50, 50, 50, 50, 50],
+    ["core_assessment", 50, None, 50, None, 50, None, 50, None]
+]
 
-# Store the World Time API URL for the America/Chicago timezone.
-url = "https://time.now/developer/api/timezone/America/Chicago"
+with open("grades.csv", "w", newline="") as file:
+    writer = csv.writer(file)
+    writer.writerows(data)
 
-# This line sends a GET request to the TimeAPI website so the program can retrieve the current date and time..
-response = requests.get(url)
+print("grades.csv created successfully!")
 
-# This line converts the API response into a Python dictionary so the program can access the returned information.
-data = response.json()
 
-# Get the client's IP address from the JSON response.
-client_ip = data["client_ip"]
 
-# Get the current day of the year from the JSON response.
-day_of_year = data["day_of_year"]
+from google.colab import files
 
-# Get the current UTC date and time from the JSON response.
-utc_datetime = data["utc_datetime"]
+files.download("grades.csv")
 
-# Display the client's IP address.
-print("Client IP:", client_ip)
 
-# Display the current day of the year returned by the API.
-print("Day of year:", day_of_year)
 
-# Display the current UTC date and time returned by the API.
-print("UTC datetime:", utc_datetime)
+# Import pandas library because the program can read and work with the CSV file.
+import pandas as pd
 
-# Store the date when the course began and convert it to the day of the year.
-# Change this date to the actual first day of your course if necessary.
-begin_course_day = datetime(2026, 8, 17).timetuple().tm_yday
+# Read the grades.csv file into a pandas DataFrame because file contains the grades for each type of homework.
+grades = pd.read_csv("grades.csv")
 
-# Get the Unix timestamp from the JSON response and convert it to a datetime object.
-now_date = datetime.fromtimestamp(data["unixtime"])
+# Display a message so the user knows that the original data is being shown.
+print("Original Grades:")
 
-# Convert the current datetime into the day of the year.
-now_day = now_date.timetuple().tm_yday
+# Display all of the information that was read from the CSV file.
+print(grades)
 
-# Calculate how many days have passed since the course began.
-days_completed = now_day - begin_course_day
+# Display a message indicating that discussion grades will be shown.
+print("Discussion Grades:")
 
-# Divide the number of completed days by 7 because there are 7 days in one Unit.
-# int() removes any decimal portion from the result.
-units_completed = int(days_completed / 7)
+# Select the row where the homework type is discussion and display it.
+print(grades[grades["type"] == "discussion"])
 
-# Display the current Unit of the class out of 8 total Units.
-print(f"You have completed {units_completed} Units of 8.")
+# Display a grades for that Week 1 will be shown.
+print("Week 1 Grades:")
+
+# Display the homework type and Week 1 grade for every type of homework.
+print(grades[["type", "Week1"]])
+
+# Loop through every assignment type because every grade must be checked.
+for index, row in grades.iterrows():
+
+    # Get the assignment type from the CSV.
+    assignment_type = row["type"]
+
+    # Match the CSV assignment type to the appropriate JSON name.
+    if assignment_type == "discussion":
+        json_name = "Discussions"
+
+    elif assignment_type == "course_project":
+        json_name = "Course Project"
+
+    elif assignment_type == "core_assessment":
+        json_name = "Core Assessment"
+
+    # Set the default maximum grade.
+    max_grade = 50
+
+    # Check every week's grade.
+    for column in grades.columns[1:]:
+
+        # Skip blank grades because there is no grade to clean.
+        if pd.isna(grades.at[index, column]):
+            continue
+
+        # Change negative grades to zero.
+        if grades.at[index, column] < 0:
+            grades.at[index, column] = 0
+
+        # Change grades above the maximum to the maximum allowed grade.
+        if grades.at[index, column] > max_grade:
+            grades.at[index, column] = max_grade
+
+# Display the cleaned grades.
+print("\nCleaned Grades")
+print(grades)
